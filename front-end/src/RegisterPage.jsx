@@ -1,7 +1,12 @@
 import React from 'react';
+const axios = require('axios');
+
+const PASSWORD_MAX_LEN = 20;
+const PASSWORD_MIN_LEN = 8;
+const USERNAME_MAX_LEN = 16;
+const USERNAME_MIN_LEN = 3;
 
 export default class RegisterPage extends React.Component {
-
     constructor(props){
         super(props);
         this.state = {
@@ -9,74 +14,95 @@ export default class RegisterPage extends React.Component {
             password: "",
             confirmPassword: "",
             email: "",
-            err: "",
-            testDror: "no"
+            err: ""
         };
     }
-    checkConfirmPassword(confirmPassword) {
-        return confirmPassword === this.state.co
+
+    usernameIsTooShort() {
+        return this.state.username.length < USERNAME_MIN_LEN;
     }
+    usernameIsTooLong() {
+        return this.state.username.length > USERNAME_MAX_LEN;
+    }
+    usernameIsValid() {
+        return new RegExp("^[a-zA-Z0-9_]*$").test(this.state.username);
+    }
+
+    passwordIsTooShort() {
+        return this.state.password.length < PASSWORD_MIN_LEN;
+    }
+    passwordIsTooLong() {
+        return this.state.password.length > PASSWORD_MAX_LEN;
+    }
+    passwordIsValid() {
+        return new RegExp("^[a-zA-Z0-9_]*$").test(this.state.password);
+    }
+    confirmPasswordIsCorrect() {
+        return this.state.password === this.state.confirmPassword;
+    }
+
+    emailIsValid() {
+        return new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$").test(this.state.email);
+    }
+
+    checkUser() {
+        let errors = [];
+        if (this.usernameIsTooShort()) errors.push("username is too short");
+        if (this.usernameIsTooLong()) errors.push("username is too long");
+        if (!this.usernameIsValid()) errors.push("username isn't valid");
+        if (this.passwordIsTooShort()) errors.push("password is too short");
+        if (this.passwordIsTooLong()) errors.push("password is too long");
+        if (!this.passwordIsValid()) errors.push("password isn't valid");
+        if (!this.confirmPasswordIsCorrect()) errors.push("Confirm password is incorrect");
+        if (!this.emailIsValid()) errors.push("Email is invalid");
+        return errors;
+    }
+
+
     validateConfirmPassword(event) {
-        let state = this.state;
         let confirmPassword = event.target.value;
-        if (confirmPassword !== state.password) {
-            state.err = "the second password isnt match to the first password"
-        }
-        else {
-            state.err = "";
-        }
-        state.confirmPassword = confirmPassword;
-        this.setState(state);
+        this.setState({confirmPassword});
     }
+    
     validateEmail(event) {
-        let state = this.state;
         let email = event.target.value;
-        let regex = new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$");
-        if (!regex.test(email)) {
-            state.err = "this is not a valid email";
-        }
-        else {
-            state.err = "";
-        }
-        state.email = email;
-        this.setState(state);
+        this.setState({email});
     }
     validatePassword(event) {
-        const maxLength = 20;
-        const minLength = 8;
-        let err = "";
         let password = event.target.value;
-        let regex = new RegExp("^[a-zA-Z0-9_]*$");
-        if (password.length > maxLength || password.length < minLength) {
-            err = "password lenght isnt valid"
-        }
-        else if(!regex.test(password)) {
-            err = "invalid characters";
-        }
-        this.setState({err, password});
-
-
+        this.setState({password});
     }
 
     validateName(e) {
-        const maxLength = 16;
-        const minLength = 3;
-        let err = "";
         let username = e.target.value;
-        let regex = new RegExp("^[a-zA-Z0-9_]*$");
-
-        if (username.length > maxLength || username.length < minLength) {
-            err = `${username} lenght isnt valid`;
-        }
-        else if(!regex.test(username)) {
-            err = `${username} invalid characters`;
-        }
-        this.setState(() => ({ err, username }), () => console.log(this.state));
-        //console.log(this.state)
+        this.setState({username});
     }
 
-    sendRegisterInfo(){
-        alert(this.state.username)
+    sendRegisterInfo() {
+
+        let errors = this.checkUser();
+        if (errors.length !== 0) {
+            let str = "";
+            for (let i = 0; i < errors.length; i++) str += errors[i]+"\n";
+            this.setState({err: str});
+        }
+        else {
+        axios.post('http://localhost:3001/register',{
+            username: this.state.username,
+            password: this.state.password,
+            email: this.state.email
+            
+        }).then((res) => {
+            if (!res.data.hasOwnProperty('errors')) this.setState({err: "Done."});
+            else {
+            let str = "";
+            for (let i = 0; i < res.data.errors.length; i++) str += res.data.errors[i]+"\n";
+            this.setState({err: str});
+            console.log(res)
+          }}).catch((err) => {
+            console.log(err)
+          });      
+        }
     }
 
     render() {
@@ -95,5 +121,4 @@ export default class RegisterPage extends React.Component {
             </div>
         );
     }
-
 }
