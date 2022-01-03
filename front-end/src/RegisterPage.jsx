@@ -58,31 +58,10 @@ export default class RegisterPage extends React.Component {
         return errors;
     }
 
-
-    validateConfirmPassword(event) {
-        let confirmPassword = event.target.value;
-        this.setState({confirmPassword});
-    }
-    
-    validateEmail(event) {
-        let email = event.target.value;
-        this.setState({email});
-    }
-    validatePassword(event) {
-        let password = event.target.value;
-        this.setState({password});
-    }
-
-    validateName(e) {
-        let username = e.target.value;
-        this.setState({username});
-    }
-
     sendRegisterInfo() {
-
         let errors = this.checkUser();
         if (errors.length !== 0) {
-            let str = "";
+            let str = "Front: \n";
             for (let i = 0; i < errors.length; i++) str += errors[i]+"\n";
             this.setState({err: str});
         }
@@ -95,7 +74,7 @@ export default class RegisterPage extends React.Component {
         }).then((res) => {
             if (!res.data.hasOwnProperty('errors')) this.setState({err: "Done."});
             else {
-            let str = "";
+            let str = "Back: \n";
             for (let i = 0; i < res.data.errors.length; i++) str += res.data.errors[i]+"\n";
             this.setState({err: str});
             console.log(res)
@@ -110,13 +89,13 @@ export default class RegisterPage extends React.Component {
             <div>
                 <p>{this.state.err}</p>
                 User name:
-                <input onInput={(e) => {this.validateName(e)}}></input>
+                <input onInput={(e) => this.setState({username: e.target.value})}></input>
                 Password:
-                <input onInput={(e) => {this.validatePassword(e)}}></input>
+                <input onInput={(e) => this.setState({password: e.target.value})}></input>
                 Confirm Password:
-                <input onInput={(e) => {this.validateConfirmPassword(e)}}></input>
+                <input onInput={(e) => this.setState({confirmPassword: e.target.value})}></input>
                 Email:
-                <input onInput={(e) => {this.validateEmail(e)}}></input>
+                <input onInput={(e) => this.setState({email: e.target.value})}></input>
                 <button onClick={() => this.sendRegisterInfo()}>Register</button>
             </div>
         );
