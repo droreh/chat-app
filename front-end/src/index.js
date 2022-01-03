@@ -5,6 +5,7 @@ import App from './App.jsx';
 import RegisterPage from './RegisterPage.jsx';
 import { BrowserRouter, Routes, Route} from "react-router-dom";
 import reportWebVitals from './reportWebVitals';
+
 // הייי
 ReactDOM.render(
   <React.StrictMode>
